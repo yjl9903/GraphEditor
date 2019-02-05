@@ -29,17 +29,21 @@
     </style>
 
     <script src="D:/9-library/p5/p5.min.js"></script>
-    <script src="D:/9-library/vue.min.js"></script>
-    <script src="main.js"></script>
+    <script src="D:/9-library/vue.js"></script>
 </head>
 <body>
-    <div id="container">
-        <ul class="nav-bar" style="margin-bottom: 5px;">
-            <li>Create</li>
-            <li>Paint</li>
-            <li>Data</li>
+    <div id="app">
+        <ul class="nav-bar">
+            <li @click="changeMode(0)">Create</li>
+            <li @click="changeMode(3)" >Paint</li>
+            <li @click="clear()" >Clear</li>
+            <li >Data</li>
         </ul>
 
+        <div id="container"></div>
     </div>
 </body>
+
+<script src="main.js"></script>
+
 </html>

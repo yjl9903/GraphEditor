@@ -1,15 +1,10 @@
-
+// const mode
+const NO_MODE = -1, WAIT_MODE = 0, DRAG_MODE = 1, LINK_MODE = 2, PAINT_MODE = 3;
 
 function GraphEditor(dom) {
-    // const mode
-    const NO_MODE = 0, DRAG_MODE = 1, LINK_MODE = 2, PAINT_MODE = 3;
-
     // emit redraw
     function emit(name = 'draw') {
         document.dispatchEvent(new Event(name, { bubbles: false }));
-    }
-    function distance(x, y) {
-        return Math.sqrt((x.x - y.x) ** 2 + (x.y - y.y) ** 2);
     }
 
     {   // Class Vertex, Edge
@@ -123,15 +118,62 @@ function GraphEditor(dom) {
         };
     })();
 
-    let mode = NO_MODE;
-    const actions = (function() {
-        
-    })();
+    let mode = PAINT_MODE, that = this;
 
     const gcvs = function(sk) {
+        const abs = sk.abs;
+        function isInCanvas() {
+            if (sk.mouseX < 0 || sk.mouseY < 0 || sk.mouseX > sk.width || sk.mouseY > sk.height) return false;
+            return true;
+        }
+        function distance(x, y) {
+            return sk.sqrt(1.0 * (x.x - y.x) * (x.x - y.x) + 1.0 * (x.y - y.y) * (x.y - y.y));
+        }
+
         document.addEventListener('draw', function() {
             sk.redraw();
         });
+
+        const actions = (function() {
+            const PAINT_SIZE = 20;
+
+            return {
+                '-1': {
+                    pressed: () => {}, dragged: () => {}, released: () => {}
+                },
+                '0': {
+                    pressed: () => {
+
+                    },
+                    dragged: () => {
+
+                    },
+                    released: () => {
+
+                    }
+                },
+                '3': {
+                    pressed: () => {
+                        sk.loop();
+                    },
+                    dragged: () => {
+                        if (!isInCanvas()) return;
+                        sk.fill('red');
+                        sk.ellipse(sk.mouseX, sk.mouseY, PAINT_SIZE);
+                        let dis = distance({x: sk.pmouseX, y: sk.pmouseY}, {x: sk.mouseX, y: sk.mouseY});
+                        if (dis < PAINT_SIZE / 2.0) return;
+                        let x = 1.0 * sk.pmouseX, y = 1.0 * sk.pmouseY;
+                        let dx = 1.0 * (sk.mouseX - sk.pmouseX) / dis, dy = 1.0 * (sk.mouseY - sk.pmouseY) / dis;
+                        for (; distance({x: x, y: y}, {x: sk.mouseX, y: sk.mouseY}) > 1; x += dx, y += dy) {
+                            sk.ellipse(x, y, PAINT_SIZE);
+                        }
+                    },
+                    released: () => {
+                        sk.noLoop();
+                    }
+                }
+            };
+        })();
 
         sk.setup = function() {
             sk.createCanvas(800, 600);
@@ -140,10 +182,12 @@ function GraphEditor(dom) {
             sk.textSize(18);
             sk.textFont('Consolas');
             sk.textAlign(sk.CENTER, sk.CENTER);
+
+            sk.background(220);
         };
         
         sk.draw = function() {
-            sk.background(220);
+            if (mode !== PAINT_MODE) sk.background(220);
     
             if (mode === LINK_MODE && start) {
                 sk.strokeWeight(2);
@@ -174,13 +218,19 @@ function GraphEditor(dom) {
 
         sk.mousePressed = function() {
             if (sk.mouseX < 0 || sk.mouseY < 0 || sk.mouseX > sk.width || sk.mouseY > sk.height) return;
-            
+
+            if (mode != NO_MODE && mode != WAIT_MODE) actions[mode].pressed();
         };
         sk.mouseDragged = function() {
-
+            if (mode != NO_MODE && mode != WAIT_MODE) actions[mode].dragged();
         }
         sk.mouseReleased = function() {
+            if (mode != NO_MODE && mode != WAIT_MODE) actions[mode].released();
+        }
 
+        that.changeMode = function(x) {
+            mode = x;
+            if (mode !== PAINT_MODE) sk.redraw();
         }
     }
 
@@ -188,14 +238,20 @@ function GraphEditor(dom) {
 }
 
 new Vue({
-    el: 'container',
+    el: '#app',
     data: {
-
+        editor: Object,
     },
     methods: {
-        
+        changeMode(s) {
+            console.log(s);
+            this.editor.changeMode(parseInt(s));
+        },
+        clear() {
+            
+        }
     },
     mounted() {
-        new GraphEditor('container');
+        this.editor = new GraphEditor('container');
     },
 });
