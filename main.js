@@ -1,6 +1,17 @@
 // const mode
 const NO_MODE = -1, WAIT_MODE = 0, DRAG_MODE = 1, LINK_MODE = 2, PAINT_MODE = 3;
 
+function distance(x, y) {
+    return Math.sqrt(1.0 * (x.x - y.x) * (x.x - y.x) + 1.0 * (x.y - y.y) * (x.y - y.y));
+}
+function isLineCross(a, b, c, d) {
+    let u = (c.x - a.x) * (b.y - a.y) - (b.x - a.x) * (c.y - a.y);
+    let v = (d.x - a.x) * (b.y - a.y) - (b.x - a.x) * (d.y - a.y);
+    let w = (a.x - c.x) * (d.y - c.y) - (d.x - c.x) * (a.y - c.y);
+    let z = (b.x - c.x) * (d.y - c.y) - (d.x - c.x) * (b.y - c.y);
+    return u * v < 0 && w * z < 0;
+}
+
 function GraphEditor(dom) {
     // emit redraw
     function emit(name = 'draw') {
@@ -118,7 +129,7 @@ function GraphEditor(dom) {
         };
     })();
 
-    let mode = PAINT_MODE, that = this;
+    let mode = WAIT_MODE, that = this, count = 1;
 
     const gcvs = function(sk) {
         const abs = sk.abs;
@@ -126,54 +137,116 @@ function GraphEditor(dom) {
             if (sk.mouseX < 0 || sk.mouseY < 0 || sk.mouseX > sk.width || sk.mouseY > sk.height) return false;
             return true;
         }
-        function distance(x, y) {
-            return sk.sqrt(1.0 * (x.x - y.x) * (x.x - y.x) + 1.0 * (x.y - y.y) * (x.y - y.y));
-        }
 
         document.addEventListener('draw', function() {
             sk.redraw();
         });
 
-        const actions = (function() {
-            const PAINT_SIZE = 20;
+        const PAINT_SIZE = 15, PAINT_COLOR = 'red';
+        let tot = null, time_id = -1, start = null;
 
-            return {
-                '-1': {
-                    pressed: () => {}, dragged: () => {}, released: () => {}
-                },
-                '0': {
-                    pressed: () => {
+        const reset = () => {
 
-                    },
-                    dragged: () => {
+            if (time_id !== -1) clearTimeout(time_id), time_id = -1;
+            mode = WAIT_MODE;
+            sk.noLoop();
+            tot = null;
+            time_id = -1;
+        };
 
-                    },
-                    released: () => {
+        const actions = {
+            '0': {
+                pressed: () => {
+                    tot = Graph.findVertex(sk.mouseX, sk.mouseY);
+                    start = {x: sk.mouseX, y: sk.mouseY};
 
+                    if (tot) {
+                        time_id = setTimeout(() => {
+                            if (distance(tot, { x: sk.mouseX, y: sk.mouseY}) < tot.radius) {
+                                tot.move(sk.mouseX, sk.mouseY);
+                                mode = DRAG_MODE;
+                                tot.light();
+                            }
+                        }, 300);
+                        mode = LINK_MODE;
+                        start = {x: tot.x, y: tot.y};
                     }
+                    sk.loop();
                 },
-                '3': {
-                    pressed: () => {
-                        sk.loop();
-                    },
-                    dragged: () => {
-                        if (!isInCanvas()) return;
-                        sk.fill('red');
-                        sk.ellipse(sk.mouseX, sk.mouseY, PAINT_SIZE);
-                        let dis = distance({x: sk.pmouseX, y: sk.pmouseY}, {x: sk.mouseX, y: sk.mouseY});
-                        if (dis < PAINT_SIZE / 2.0) return;
-                        let x = 1.0 * sk.pmouseX, y = 1.0 * sk.pmouseY;
-                        let dx = 1.0 * (sk.mouseX - sk.pmouseX) / dis, dy = 1.0 * (sk.mouseY - sk.pmouseY) / dis;
-                        for (; distance({x: x, y: y}, {x: sk.mouseX, y: sk.mouseY}) > 1; x += dx, y += dy) {
-                            sk.ellipse(x, y, PAINT_SIZE);
+                dragged: () => {
+                    // console.log('WAIT_MODE: dragged');
+                },
+                released: () => {
+                    if (isInCanvas()) {
+                        let flag = true;
+                        const end = {x: sk.mouseX, y: sk.mouseY};
+                        Graph.forVertex((u) => {
+                            let ntos = [];
+                            for (let i = 0; i < u.tos.length; i++) {
+                                let v = u.tos[i].to;
+                                if (isLineCross(start, end, u, v)) {
+                                    flag = false;
+                                } else {
+                                    ntos.push(u.tos[i]);
+                                }
+                            }
+                            u.tos = ntos;
+                        });
+                        if (flag) {
+                            Graph.add(count, sk.mouseX, sk.mouseY);
+                            count += 1;
                         }
-                    },
-                    released: () => {
-                        sk.noLoop();
                     }
+                    reset();
                 }
-            };
-        })();
+            },
+            '1': {
+                dragged: () => {
+                    tot.move(sk.mouseX, sk.mouseY);
+                },
+                released: () => {
+                    tot.unlight();
+                    if (sk.mouseX < 0 || sk.mouseY < 0 || sk.mouseX > sk.width || sk.mouseY > sk.height) {
+                        Graph.del(tot);
+                    }
+                    reset();
+                }
+            },
+            '2': {
+                dragged: () => {
+                    if (time_id !== -1 && distance(tot, { x: sk.mouseX, y: sk.mouseY }) >= tot.radius) 
+                        clearTimeout(time_id), time_id = -1;
+                },
+                released: () => {
+                    Graph.link(tot, Graph.findVertex(sk.mouseX, sk.mouseY));
+                    reset();
+                }
+            },
+            '3': {
+                pressed: () => {
+                    sk.loop();
+                },
+                dragged: () => {
+                    if (!isInCanvas()) return;
+
+                    sk.fill(PAINT_COLOR);
+                    sk.ellipse(sk.mouseX, sk.mouseY, PAINT_SIZE);
+                    
+                    let dis = distance({x: sk.pmouseX, y: sk.pmouseY}, {x: sk.mouseX, y: sk.mouseY});
+                    if (dis < PAINT_SIZE / 2.0) return;
+                    
+                    let x = 1.0 * sk.pmouseX, y = 1.0 * sk.pmouseY;
+                    let dx = 1.0 * (sk.mouseX - sk.pmouseX) / dis, dy = 1.0 * (sk.mouseY - sk.pmouseY) / dis;
+
+                    for (; distance({x: x, y: y}, {x: sk.mouseX, y: sk.mouseY}) > 1; x += dx, y += dy) {
+                        sk.ellipse(x, y, PAINT_SIZE);
+                    }
+                },
+                released: () => {
+                    sk.noLoop();
+                }
+            }
+        };
 
         sk.setup = function() {
             sk.createCanvas(800, 600);
@@ -219,16 +292,20 @@ function GraphEditor(dom) {
         sk.mousePressed = function() {
             if (sk.mouseX < 0 || sk.mouseY < 0 || sk.mouseX > sk.width || sk.mouseY > sk.height) return;
 
-            if (mode != NO_MODE && mode != WAIT_MODE) actions[mode].pressed();
+            if (mode !== NO_MODE) actions[mode].pressed();
         };
         sk.mouseDragged = function() {
-            if (mode != NO_MODE && mode != WAIT_MODE) actions[mode].dragged();
+
+            if (mode !== NO_MODE) actions[mode].dragged();
         }
         sk.mouseReleased = function() {
-            if (mode != NO_MODE && mode != WAIT_MODE) actions[mode].released();
+
+            if (mode !== NO_MODE) actions[mode].released();
         }
 
         that.changeMode = function(x) {
+            if (mode !== WAIT_MODE) return;
+
             mode = x;
             if (mode !== PAINT_MODE) sk.redraw();
         }
