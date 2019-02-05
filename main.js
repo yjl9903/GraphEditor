@@ -146,7 +146,6 @@ function GraphEditor(dom) {
         let tot = null, time_id = -1, start = null;
 
         const reset = () => {
-
             if (time_id !== -1) clearTimeout(time_id), time_id = -1;
             mode = WAIT_MODE;
             sk.noLoop();
@@ -287,6 +286,16 @@ function GraphEditor(dom) {
             Graph.forVertex((x) => {
                 sk.text(x.name, x.x, x.y);
             });
+
+            if (mode === DRAG_MODE && tot) {
+                sk.stroke('#000');
+                sk.strokeWeight(2);
+                sk.fill(tot.color);
+                sk.ellipse(tot.x, tot.y, tot.radius);
+                sk.noStroke();
+                sk.fill('#000');
+                sk.text(tot.name, tot.x, tot.y);
+            }
         };
 
         sk.mousePressed = function() {
@@ -304,11 +313,16 @@ function GraphEditor(dom) {
         }
 
         that.changeMode = function(x) {
-            if (mode !== WAIT_MODE) return;
-
+            // if (mode !== WAIT_MODE) return;
             mode = x;
             if (mode !== PAINT_MODE) sk.redraw();
         }
+
+        that.clear = function() {
+            sk.background(220);
+            Graph.clear();
+            count = 1;
+        };
     }
 
     new p5(gcvs, dom);
@@ -321,11 +335,11 @@ new Vue({
     },
     methods: {
         changeMode(s) {
-            console.log(s);
+            // console.log(s);
             this.editor.changeMode(parseInt(s));
         },
         clear() {
-            
+            this.editor.clear();
         }
     },
     mounted() {
