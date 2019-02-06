@@ -87,7 +87,7 @@ function GraphEditor(dom) {
             }
             emit();
             return true;
-        }
+        };
         const del = function(u) {
             for (let v of u.tos) {
                 let tmp = [];
@@ -98,20 +98,20 @@ function GraphEditor(dom) {
             }
             delete vertex[u.name];
             emit();
-        }
+        };
         
         const forVertex = function(f) {
             for (let x in vertex) {
                 f(vertex[x]);
             }
-        }
+        };
         const forEdge = function(f) {
             for (let x in vertex) {
                 for (let e of vertex[x].tos) {
                     f(vertex[x], e);
                 }
             }
-        }
+        };
         const findVertex = function(mx, my) {
             let m = { x: mx, y: my }, mn = Number.MAX_VALUE, v = null;
             forVertex(function(x) {
@@ -122,10 +122,19 @@ function GraphEditor(dom) {
             });
             if (mn < Vertex.prototype.radius) return v;
             else return null;
+        };
+
+        const changeColor = function(id, c = '#fff') {
+            if (!id) return;
+            try {
+                vertex[id].light(c);
+            } catch {
+                console.log('Data Error');
+            }
         }
     
         return {
-            clear, add, link, del, forVertex, forEdge, findVertex
+            clear, add, link, del, forVertex, forEdge, findVertex, changeColor
         };
     })();
 
@@ -134,6 +143,7 @@ function GraphEditor(dom) {
     const gcvs = function(sk) {
         const abs = sk.abs;
         const BACKGROUND_COLOR = 255;
+        const PAINT_SIZE = 5, PAINT_COLOR = 'red';
 
         function isInCanvas() {
             if (sk.mouseX < 0 || sk.mouseY < 0 || sk.mouseX > sk.width || sk.mouseY > sk.height) return false;
@@ -144,7 +154,6 @@ function GraphEditor(dom) {
             sk.redraw();
         });
 
-        const PAINT_SIZE = 15, PAINT_COLOR = 'red';
         let tot = null, time_id = -1, start = null;
 
         const reset = () => {
@@ -328,12 +337,14 @@ function GraphEditor(dom) {
     }
 
     new p5(gcvs, dom);
+
+    this.graph = Graph;
 }
 
 new Vue({
     el: '#app',
     data: {
-        editor: Object, isActive: 'Create'
+        editor: Object, isActive: 'Create', graphData: String, styleData: String
     },
     methods: {
         changeMode(s) {
@@ -349,7 +360,28 @@ new Vue({
         },
         showData() {
             this.isActive = 'Data';
+            let v = '', mp = {};
+            this.editor.graph.forEdge((u, e) => {
+                if (mp[u.name + ' ' + e.to.name]) return;
+                v += u.name + ' ' + e.to.name + '\n';
+                mp[e.to.name + ' ' + u.name] = 1;
+            });
+            this.graphData = v;
 
+            let s = '';
+            this.editor.graph.forVertex((u) => {
+                s += u.name + ': ' + u.color + '\n';
+            });
+            this.styleData = s;
+        },
+        updateData() {
+            let data = this.styleData.split('\n');
+            // console.log(data);
+            for (let x of data) {
+                if (x === '') continue;
+                let a = x.split(': ');
+                this.editor.graph.changeColor(a[0], a[1]);
+            }
         }
     },
     mounted() {
