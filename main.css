@@ -30,3 +30,64 @@
     color: #303133;
     border-bottom: 1px solid #409EFF;
 }
+
+.button {
+    display: inline-block;
+    color: #606266;
+    background: #fff;
+
+    line-height: 1;
+    padding: 10px 16px;
+
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    outline: none;
+    box-sizing: border-box;
+
+    text-align: center;
+    font-weight: 500;
+    cursor: pointer;
+
+    transition: .1s;
+}
+.button:hover {
+    color: #409eff;
+    border-color: #c6e2ff;
+    background-color: #ecf5ff;
+}
+.button:active {
+    color: #3a8ee6;
+    border-color: #3a8ee6;
+}
+
+textarea {
+    display: block;
+    padding: 10px 10px;
+    border-radius: 7px;
+    outline: none;
+
+    font-size: 18px;
+    font-family: 'Fira Code';
+    line-height: 18px;
+    resize: none;
+}
+
+#show-data {
+    width: 800px;
+    height: 600px;
+    padding: 10px;
+
+    box-sizing: border-box;
+    /* border: 1px solid black; */
+}
+
+#app {
+    height: 645px;
+    width: 810px;
+    padding: 0 5px;
+    border-radius: 7px;
+
+    border: 1px solid black;
+
+    margin: 0 auto;
+}

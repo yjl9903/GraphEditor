@@ -133,6 +133,8 @@ function GraphEditor(dom) {
 
     const gcvs = function(sk) {
         const abs = sk.abs;
+        const BACKGROUND_COLOR = 255;
+
         function isInCanvas() {
             if (sk.mouseX < 0 || sk.mouseY < 0 || sk.mouseX > sk.width || sk.mouseY > sk.height) return false;
             return true;
@@ -255,11 +257,11 @@ function GraphEditor(dom) {
             sk.textFont('Consolas');
             sk.textAlign(sk.CENTER, sk.CENTER);
 
-            sk.background(220);
+            sk.background(BACKGROUND_COLOR);
         };
         
         sk.draw = function() {
-            if (mode !== PAINT_MODE) sk.background(220);
+            if (mode !== PAINT_MODE) sk.background(BACKGROUND_COLOR);
     
             if (mode === LINK_MODE && start) {
                 sk.strokeWeight(2);
@@ -319,7 +321,7 @@ function GraphEditor(dom) {
         }
 
         that.clear = function() {
-            sk.background(220);
+            sk.background(BACKGROUND_COLOR);
             Graph.clear();
             count = 1;
         };
@@ -331,15 +333,23 @@ function GraphEditor(dom) {
 new Vue({
     el: '#app',
     data: {
-        editor: Object,
+        editor: Object, isActive: 'Create'
     },
     methods: {
         changeMode(s) {
+            s = parseInt(s);
+            if (s === 0) this.isActive = 'Create';
+            else if (s === 3) this.isActive = 'Paint';
             // console.log(s);
-            this.editor.changeMode(parseInt(s));
+            this.editor.changeMode(s);
         },
         clear() {
+
             this.editor.clear();
+        },
+        showData() {
+            this.isActive = 'Data';
+
         }
     },
     mounted() {

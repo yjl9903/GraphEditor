@@ -33,14 +33,23 @@
 </head>
 <body>
     <div id="app">
-        <ul class="nav-bar">
-            <li @click="changeMode(0)">Create</li>
-            <li @click="changeMode(3)">Paint</li>
-            <li @click="clear()">Clear</li>
-            <li>Data</li>
+        <ul class="nav-bar" style="margin-bottom: 1px;">
+            <li @click="changeMode(0)" :class="{active: isActive==='Create'}">Create</li>
+            <li @click="changeMode(3)" :class="{active: isActive==='Paint'}">Paint</li>
+            <li @click="clear()" :class="{active: isActive==='Clear'}">Clear</li>
+            <li @click="showData()" :class="{active: isActive==='Data'}">Data</li>
         </ul>
 
-        <div id="container"></div>
+        <div id="container" v-show="isActive !== 'Data'"></div>
+        <div id="show-data" v-show="isActive === 'Data'">
+            <div style="display: inline-block;">
+                <textarea name="link-data" id="link-data" cols="30" rows="28"></textarea>
+            </div>
+            <div style="display: inline-block; margin-left: 50px;">
+                <textarea name="draw-data" id="draw-data" cols="30" rows="28"></textarea>
+            </div>
+            <button class="button" style="margin-top: 15px;">更新</button>
+        </div>
     </div>
 </body>
 
