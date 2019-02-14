@@ -132,9 +132,17 @@ function GraphEditor(dom) {
                 console.log('Data Error');
             }
         }
+        const changePosition = function(id, x = 0, y = 0) {
+            if (!id) return;
+            try {
+                vertex[id].move(parseInt(x), parseInt(y));
+            } catch {
+                console.log('Data Error');
+            }
+        }
     
         return {
-            clear, add, link, del, forVertex, forEdge, findVertex, changeColor
+            clear, add, link, del, forVertex, forEdge, findVertex, changeColor, changePosition
         };
     })();
 
@@ -370,7 +378,7 @@ new Vue({
 
             let s = '';
             this.editor.graph.forVertex((u) => {
-                s += u.name + ': ' + u.color + '\n';
+                s += u.name + ': ' + u.color + ' | ' + parseInt(u.x) + ' ' + parseInt(u.y) + '\n';
             });
             this.styleData = s;
         },
@@ -380,7 +388,12 @@ new Vue({
             for (let x of data) {
                 if (x === '') continue;
                 let a = x.split(': ');
-                this.editor.graph.changeColor(a[0], a[1]);
+                let id = a[0];
+                a = a[1].split(' | ');
+                let color = a[0];
+                a = a[1].split(' ');
+                this.editor.graph.changeColor(id, color);
+                this.editor.graph.changePosition(id, a[0], a[1]);
             }
         }
     },

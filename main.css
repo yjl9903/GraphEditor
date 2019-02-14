@@ -2,30 +2,29 @@
     font-size: 16px;
     color: #606266;
     height: 40px;
-
     box-shadow: 0px 1px 0px #DCDFE6;
     width: 800px;
-
     box-sizing: border-box;
     z-index: 999;
 }
+
 .nav-bar>li {
     float: left;
     height: 40px;
     line-height: 40px;
     width: 60px;
     text-align: center;
-
     cursor: pointer;
     user-select: none;
-
     box-sizing: border-box;
     z-index: 999;
 }
+
 .nav-bar>li:hover {
     color: #303133;
     border-bottom: 1px solid #409EFF;
 }
+
 .active {
     color: #303133;
     border-bottom: 1px solid #409EFF;
@@ -35,26 +34,24 @@
     display: inline-block;
     color: #606266;
     background: #fff;
-
     line-height: 1;
     padding: 10px 16px;
-
     border: 1px solid #dcdfe6;
     border-radius: 4px;
     outline: none;
     box-sizing: border-box;
-
     text-align: center;
     font-weight: 500;
     cursor: pointer;
-
     transition: .1s;
 }
+
 .button:hover {
     color: #409eff;
     border-color: #c6e2ff;
     background-color: #ecf5ff;
 }
+
 .button:active {
     color: #3a8ee6;
     border-color: #3a8ee6;
@@ -65,7 +62,6 @@ textarea {
     padding: 10px 10px;
     border-radius: 7px;
     outline: none;
-
     font-size: 18px;
     font-family: 'Fira Code';
     line-height: 18px;
@@ -76,7 +72,6 @@ textarea {
     width: 800px;
     height: 600px;
     padding: 10px;
-
     box-sizing: border-box;
     /* border: 1px solid black; */
 }
@@ -86,8 +81,5 @@ textarea {
     width: 810px;
     padding: 0 5px;
     border-radius: 7px;
-
     border: 1px solid black;
-
-    margin: 0 auto;
 }
