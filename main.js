@@ -1,5 +1,5 @@
 // const mode
-const NO_MODE = -1, WAIT_MODE = 0, DRAG_MODE = 1, LINK_MODE = 2, PAINT_MODE = 3;
+const NO_MODE = -1, WAIT_MODE = 0, DRAG_MODE = 1, LINK_MODE = 2, PAINT_MODE = 3, LIGHT_MODE = 4;
 
 function distance(x, y) {
     return Math.sqrt(1.0 * (x.x - y.x) * (x.x - y.x) + 1.0 * (x.y - y.y) * (x.y - y.y));
@@ -263,6 +263,23 @@ function GraphEditor(dom) {
                 released: () => {
                     sk.noLoop();
                 }
+            },
+            '4': {
+                pressed: () => {
+                    tot = Graph.findVertex(sk.mouseX, sk.mouseY);
+                    if (tot) {
+                        if (tot.hasOwnProperty('color')) {
+                            tot.unlight();
+                        } else {
+                            tot.light();
+                        }
+                        sk.redraw();
+                    }
+                },
+                dragged: () => {},
+                released: () => {
+                    tot = null;
+                }
             }
         };
 
@@ -334,11 +351,13 @@ function GraphEditor(dom) {
         that.changeMode = function(x) {
             // if (mode !== WAIT_MODE) return;
             mode = x;
+            Graph.forVertex((v) => v.unlight());
             if (mode !== PAINT_MODE) sk.redraw();
         }
 
         that.clear = function() {
             sk.background(BACKGROUND_COLOR);
+            if (mode === PAINT_MODE) return ;
             Graph.clear();
             count = 1;
         };
@@ -359,6 +378,7 @@ new Vue({
             s = parseInt(s);
             if (s === 0) this.isActive = 'Create';
             else if (s === 3) this.isActive = 'Paint';
+            else if (s === 4) this.isActive = 'Light';
             // console.log(s);
             this.editor.changeMode(s);
         },

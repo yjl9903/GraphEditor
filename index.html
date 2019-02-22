@@ -37,6 +37,7 @@
         <ul class="nav-bar" style="margin-bottom: 1px;">
             <li @click="changeMode(0)" :class="{active: isActive==='Create'}">Create</li>
             <li @click="changeMode(3)" :class="{active: isActive==='Paint'}">Paint</li>
+            <li @click="changeMode(4)" :class="{active: isActive==='Light'}">Light</li>
             <li @click="clear()" :class="{active: isActive==='Clear'}">Clear</li>
             <li @click="showData()" :class="{active: isActive==='Data'}">Data</li>
         </ul>
