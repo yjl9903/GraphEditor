@@ -357,6 +357,7 @@ function GraphEditor(dom) {
 
         that.clear = function() {
             sk.background(BACKGROUND_COLOR);
+            sk.redraw();
             if (mode === PAINT_MODE) return ;
             Graph.clear();
             count = 1;
