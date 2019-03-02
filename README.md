@@ -2,6 +2,8 @@
 
 Create your Graph easily.
 
+在线 demo: [GraphEditor](https://xlor.cn/graph/index.html)
+
 ## Start
 
 Just open `index.html`.
@@ -20,10 +22,14 @@ Just open `index.html`.
 
 拖动鼠标，在图上标注。
 
+### Light Mode
+
+点击点亮图上的点。
+
 ### Clear
 
-清楚图上所有内容。
+清除图上所有内容。
 
 ### Data
 
-在右边输入框内，可以改变对应顶点的颜色。
+在右边输入框内，修改对应顶点的颜色和坐标。
